@@ -26,8 +26,9 @@
 ## Code Quality & Automation
 - Use `.claude/agents` and `.claude/commands` for general tasks like code review, refactoring, debugging, and cleanup.
 - **After developing a new feature**, run code review using `.claude/agents/senior-code-reviewer.md` or `.claude/commands/review.md`.
+- **Setup MCP servers** using `.claude/commands/setup.md` to enable enhanced development capabilities (shadcn, context7, supabase, next-devtools, playwright, browser).
 - Available agents: code-reviewer, code-refactor, code-simplifier, debug-detective, performance-hunter, tech-debt-mapper, etc.
-- Available commands: review, refactor, simplify, debug, perf, cleanup, debt, etc.
+- Available commands: setup, review, refactor, simplify, debug, perf, cleanup, debt, etc.
 
 ## Coding Principles
 - **KISS** (Keep It Simple, Stupid) - Prefer simple, straightforward solutions over clever ones.
