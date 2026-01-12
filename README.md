@@ -41,6 +41,8 @@ A production-ready monorepo template featuring **shadcn/ui**, **Supabase authent
 
 ## 🚀 Quick Start
 
+> **⚠️ Important**: Before building or running Docker, you must create a `.env` file with your Supabase credentials. See step 2 below.
+
 ### 1. Clone and Install
 
 ```bash
@@ -49,31 +51,51 @@ cd shadcn-ui-supabase-docker-template
 pnpm install
 ```
 
-### 2. Set Up Supabase
+### 2. Set Up Environment Variables
+
+**⚠️ IMPORTANT: You must set up environment variables before building or running Docker.**
+
+Create a `.env` file in the root directory:
+
+```bash
+cp .env.example .env
+```
+
+Then edit `.env` and add your Supabase credentials (see step 3).
+
+### 3. Set Up Supabase
 
 1. Create a new project at [supabase.com](https://supabase.com)
-2. Get your project URL and API keys from Project Settings → API
-3. Copy environment variables (see [Environment Variables](#-environment-variables))
+2. Get your project URL and API keys from **Project Settings → API**
+3. Update the `.env` file with your credentials:
 
-### 3. Configure Environment Variables
+```env
+SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
 
-Create `.env` files in each app directory:
+### 4. Configure App-Specific Environment Variables (Optional)
 
-**`apps/web/.env.local`**
+For local development without Docker, you can also create `.env.local` files in each app directory:
+
+**`apps/web/.env.local`** (optional for local dev)
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-**`apps/admin/.env.local`**
+**`apps/admin/.env.local`** (optional for local dev)
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ADMIN_PASSWORD_HASH=your_bcrypt_password_hash
 ```
 
-**`apps/server/.env`**
+**`apps/server/.env`** (optional for local dev)
 ```env
 SUPABASE_URL=your_supabase_project_url
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
@@ -82,7 +104,7 @@ PORT=4000
 CORS_ORIGIN=http://localhost:3000
 ```
 
-### 4. Generate Admin Password Hash
+### 5. Generate Admin Password Hash
 
 For the admin dashboard, generate a password hash:
 
@@ -93,7 +115,7 @@ pnpm generate:password
 # Copy the generated hash to ADMIN_PASSWORD_HASH in .env.local
 ```
 
-### 5. Run Development Servers
+### 6. Run Development Servers
 
 **Option A: Local Development**
 ```bash
@@ -143,7 +165,15 @@ make clean
 
 ### Environment Variables for Docker
 
-Create a `.env` file in the root directory:
+**The `.env` file in the root directory is required for Docker builds.**
+
+If you haven't created it yet, copy from the example:
+
+```bash
+cp .env.example .env
+```
+
+Then edit `.env` and add your actual Supabase credentials:
 
 ```env
 # Supabase
@@ -304,6 +334,34 @@ All services will be available:
 The template includes dark mode support via `next-themes`. Customize colors in:
 - `packages/ui/src/styles/globals.css` (Tailwind theme)
 - Individual component files for component-specific styling
+
+## 🔧 Troubleshooting
+
+### Docker Build Fails with "Missing environment variables"
+
+**Error**: `Error: Missing environment variables: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+**Solution**: Create a `.env` file in the root directory:
+
+```bash
+cp .env.example .env
+```
+
+Then edit `.env` and add your Supabase credentials. Docker Compose reads environment variables from the root `.env` file.
+
+### Build Succeeds but App Doesn't Work
+
+Make sure you've:
+1. Created a Supabase project
+2. Added your credentials to `.env` (for Docker) or app-specific `.env.local` files (for local dev)
+3. Generated an admin password hash if using the admin dashboard
+
+### Port Already in Use
+
+If ports 3000, 3001, or 4000 are already in use:
+
+- **Local development**: Stop other services using those ports, or modify the ports in `package.json` scripts
+- **Docker**: Modify port mappings in `docker-compose.yml` or `docker-compose.dev.yml`
 
 ## 📚 Learn More
 
