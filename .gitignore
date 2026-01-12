@@ -44,6 +44,6 @@ npm-debug.log*
 *.pem
 
 # Claude Code local settings
-.claude/
+.claude/settings.local.json
 
 .mcp.json
