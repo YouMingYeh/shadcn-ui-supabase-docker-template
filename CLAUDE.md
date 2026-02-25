@@ -1,69 +1,77 @@
-# Repository Guidelines
+# CLAUDE.md
 
-## Project Structure & Module Organization
-- `apps/web` and `apps/admin` are Next.js App Router frontends; route files live under `app/`, shared UI in `components/`, and static assets in `public/`.
-- `apps/server` is the Express API; source lives in `src/`, compiled output in `dist/`.
-- `packages/ui` contains shared shadcn/ui components; `packages/database` holds Supabase types.
-- Shared configs live in `packages/eslint-config` and `packages/typescript-config`.
-- Root orchestration is in `turbo.json`, with Docker definitions in `docker-compose.yml` and `docker-compose.dev.yml`.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Database Types - Single Source of Truth
-- **`packages/database/src/database.types.ts`** is the single source of truth for all database types.
-- **MUST regenerate types** whenever you change the Supabase schema, tables, functions, or enums.
-- Regenerate using: `npx supabase gen types typescript --project-id "your-project-id" --schema public > packages/database/src/database.types.ts`
-- Never manually edit `database.types.ts` - always regenerate from the actual schema.
-- Import types using: `import type { Database, Tables, TablesInsert, TablesUpdate } from "@workspace/database/types"`
+## Build & Development Commands
 
-## Build, Test, and Development Commands
-- **ALWAYS run lint, typecheck, and build** before committing: `pnpm lint && pnpm typecheck && pnpm build`
-- `pnpm dev` runs all apps in dev mode via Turborepo.
-- `pnpm build` builds every app/package; `pnpm typecheck` and `pnpm lint` validate TS + lint rules.
-- `pnpm format` runs Prettier across `*.ts`, `*.tsx`, and `*.md`.
-- Scoped runs: `pnpm --filter web dev`, `pnpm --filter admin build`, `pnpm --filter server dev`.
-- Docker: `make dev-docker` (dev stack), `make up`/`make down`, `make logs`, `make clean`.
-- **ALWAYS run `docker compose up --build -d`** to ensure services actually run and are built correctly.
+```bash
+pnpm install                    # Install all dependencies
+pnpm dev                        # Run all apps in dev mode (web:3000, admin:3001, server:4000)
+pnpm build                      # Build all apps/packages
+pnpm lint                       # Lint all packages
+pnpm typecheck                  # Type check all packages
+pnpm format                     # Prettier format *.ts, *.tsx, *.md
 
-## Code Quality & Automation
-- Use `.claude/agents` and `.claude/commands` for general tasks like code review, refactoring, debugging, and cleanup.
-- **After developing a new feature**, run code review using `.claude/agents/senior-code-reviewer.md` or `.claude/commands/review.md`.
-- **Setup MCP servers** using `.claude/commands/setup.md` to enable enhanced development capabilities (shadcn, context7, supabase, next-devtools, playwright, browser).
-- Available agents: code-reviewer, code-refactor, code-simplifier, debug-detective, performance-hunter, tech-debt-mapper, etc.
-- Available commands: setup, review, refactor, simplify, debug, perf, cleanup, debt, etc.
+# Scoped to a single app
+pnpm --filter web dev
+pnpm --filter admin dev
+pnpm --filter server dev
 
-## Coding Principles
-- **KISS** (Keep It Simple, Stupid) - Prefer simple, straightforward solutions over clever ones.
-- **CLEAN Code** - Write readable, self-documenting code with clear intent.
-- **SOLID Principles** - Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion.
-- **DRY** (Don't Repeat Yourself) - Extract common logic into reusable functions/components.
-- **LESS IS MORE** - Avoid over-engineering; solve the actual problem, not hypothetical ones.
-- **SIMPLICITY OVER COMPLEXITY** - Choose the simplest solution that works; complexity should be justified.
+# Docker
+make dev-docker                 # Dev mode (attached, hot-reload via volume mounts)
+make up                         # Production (detached)
+make down                       # Stop services
+make logs                       # All logs; also logs-web, logs-admin, logs-server
+make clean                      # Remove containers, volumes, and images
+docker compose up --build -d    # Rebuild and verify services run correctly
+```
 
-## UI Components & Styling
-- **ALWAYS use shadcn/ui components** from `@workspace/ui` for UI elements.
-- **ALWAYS use global CSS** for styling; avoid hardcoding Tailwind colors or layout classes.
-- Never hardcode Tailwind color values (e.g., `bg-blue-500`, `text-red-600`) - use CSS variables or theme tokens.
-- Never hardcode layout values (e.g., `w-[123px]`, `h-[456px]`) - use semantic classes or CSS variables.
-- Prefer semantic component composition over utility-first styling when it improves maintainability.
-- Add new shadcn/ui components via: `cd packages/ui && npx shadcn@latest add [component-name]`
+**Before committing, always run:** `pnpm lint && pnpm typecheck && pnpm build`
 
-## Coding Style & Naming Conventions
-- Use TypeScript everywhere; keep code formatted by Prettier and aligned with ESLint configs in each app (`apps/*/eslint.config.js`).
-- Follow existing file placement: Next.js routes in `apps/*/app`, shared UI in `packages/ui`, server modules in `apps/server/src`.
+## Architecture
+
+This is a **pnpm + Turborepo monorepo** with three apps and shared packages. All packages use ES modules.
+
+### Apps
+
+- **`apps/web`** — Next.js 16 user-facing app (port 3000). Uses Supabase Auth (email/password + Google OAuth). Routes: `/login`, `/signup`, `/dashboard` (protected), `/auth/confirm` (OAuth + email OTP). Standalone output for Docker. React Compiler enabled.
+- **`apps/admin`** — Next.js 16 admin dashboard (port 3001). Uses a **custom bcrypt + in-memory session system** (NOT Supabase Auth). Password-only login. The `verifySession()` guard is called per-page in Server Components (no middleware). Admin sessions have 24h TTL and are stored in a `Map` — server restart kills all sessions.
+- **`apps/server`** — Express 4 API (port 4000). Middleware: helmet, cors, morgan, JSON parsing. Routes under `/api/`. Only `/api/health` exists currently. Dev uses `nodemon` + `tsx` (no compilation). Build compiles to `dist/` via `tsc`.
+
+### Packages
+
+- **`packages/ui`** — Shared shadcn/ui components (New York style, Tailwind v4, OKLCH colors). Import pattern: `import { Button } from "@workspace/ui/components/button"` (per-component exports, no barrel). Global CSS at `src/styles/globals.css` with `@source` directives that scan `apps/**/*.{ts,tsx}` for Tailwind JIT. Custom tokens: `--info`, `--success`, `--warning` + foregrounds. Button has `loading`/`loadingText` extended props.
+- **`packages/database`** — Supabase TypeScript types. Single source of truth: `src/database.types.ts`. Import: `import type { Database, Tables, TablesInsert, TablesUpdate } from "@workspace/database/types"`. Never manually edit — always regenerate:
+  ```bash
+  npx supabase gen types typescript --project-id "your-project-id" --schema public > packages/database/src/database.types.ts
+  ```
+- **`packages/eslint-config`** / **`packages/typescript-config`** — Shared configs.
+
+## Key Architectural Patterns
+
+**Two distinct auth systems:**
+- `apps/web` uses `@supabase/ssr` with cookie-based sessions. Supabase client helpers are in `utils/supabase/` (`client.ts` for browser, `server.ts` for server with `createClient()`, `createAdminClient()`, `requireAuth()`).
+- `apps/admin` uses custom auth in `lib/dal.ts` (bcrypt password verify + UUID sessions in a `Map`). The Supabase client in admin (`lib/supabase.ts`) is service-role only, used for data operations.
+
+**Docker env var handling:**
+- `NEXT_PUBLIC_*` vars must be passed as build `ARG`s (baked into JS bundle) AND as runtime `environment:` (for SSR). Server-only secrets are runtime-only.
+- `NEXT_PUBLIC_SITE_URL` is used for all auth redirects (never `request.nextUrl.origin`) to avoid Docker-internal hostnames in browser-facing URLs.
+- Bcrypt hashes in `.env` must double-escape `$` as `$$` for docker-compose interpolation.
+
+**Server env naming differs:** Server uses `SUPABASE_URL` (no `NEXT_PUBLIC_` prefix). Both point to the same instance.
+
+**Docker networking:** All services share `app-network`. Internal: `API_URL=http://server:4000`. Browser-facing: `NEXT_PUBLIC_API_URL=http://localhost:4000`.
+
+## UI & Styling Rules
+
+- Always use shadcn/ui components from `@workspace/ui`. Add new ones: `cd packages/ui && npx shadcn@latest add [component-name]`
+- Use global CSS variables/theme tokens — never hardcode Tailwind color values (`bg-blue-500`) or layout values (`w-[123px]`).
 - Prefer workspace imports (`@workspace/ui`, `@workspace/database`) over relative cross-package paths.
 
-## Testing Guidelines
-- **ALWAYS run lint and typecheck** before committing: `pnpm lint && pnpm typecheck`
-- **ALWAYS run build** to ensure everything compiles: `pnpm build`
-- No dedicated test runner is configured yet; rely on `pnpm lint` and `pnpm typecheck` for CI-quality checks.
-- If you add tests, follow a `*.test.ts(x)` or `*.spec.ts(x)` naming pattern and add scripts to the relevant `package.json`.
+## Environment Setup
 
-## Commit & Pull Request Guidelines
-- Git history favors short, descriptive sentences (e.g., "Update README…"). Keep the first line concise and specific.
-- PRs should include: a clear summary, linked issues (if any), and screenshots for UI changes.
-- Call out env/config changes explicitly and avoid committing secrets.
-- **Before submitting PRs**: Ensure lint, typecheck, and build all pass.
+Root `.env` is required for Docker. Local dev can use `apps/*/.env.local`. See `.env.example` for all variables. Admin password hash: `cd apps/admin && pnpm generate:password`.
 
-## Security & Configuration Tips
-- Docker expects a root `.env`; local dev can use `apps/*/.env.local` as needed.
-- Supabase keys are required for auth; never commit real credentials.
-- Always verify Docker services are running correctly with `docker compose up --build -d` and check logs.
+## Commit Style
+
+Short, descriptive first line (e.g., "Update README for env setup"). Ensure lint, typecheck, and build pass before committing.
