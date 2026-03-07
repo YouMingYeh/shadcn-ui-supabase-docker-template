@@ -1,151 +1,21 @@
 "use client";
 
-import * as React from "react";
-import * as TabsPrimitive from "@radix-ui/react-tabs";
+import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
+import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@workspace/ui/lib/utils";
-
-type TabsVariant = "default" | "underline";
-
-const TabsListContext = React.createContext<{
-  variant: TabsVariant;
-  orientation: "horizontal" | "vertical";
-}>({
-  variant: "default",
-  orientation: "horizontal",
-});
 
 function Tabs({
   className,
   orientation = "horizontal",
   ...props
-}: React.ComponentProps<typeof TabsPrimitive.Root>) {
+}: TabsPrimitive.Root.Props) {
   return (
-    <TabsListContext.Provider
-      value={{
-        variant: "default",
-        orientation: orientation as "horizontal" | "vertical",
-      }}
-    >
-      <TabsPrimitive.Root
-        data-slot="tabs"
-        orientation={orientation}
-        className={cn(
-          "flex flex-col gap-2 data-[orientation=vertical]:flex-row",
-          className,
-        )}
-        {...props}
-      />
-    </TabsListContext.Provider>
-  );
-}
-
-function TabsList({
-  variant = "default",
-  className,
-  children,
-  ...props
-}: React.ComponentProps<typeof TabsPrimitive.List> & {
-  variant?: TabsVariant;
-}) {
-  const context = React.useContext(TabsListContext);
-  const [indicatorStyle, setIndicatorStyle] =
-    React.useState<React.CSSProperties>({});
-  const listRef = React.useRef<HTMLDivElement>(null);
-  const orientation = context.orientation;
-
-  React.useEffect(() => {
-    const updateIndicator = () => {
-      if (!listRef.current) return;
-
-      const activeTab = listRef.current.querySelector(
-        '[data-state="active"]',
-      ) as HTMLElement;
-      if (!activeTab) return;
-
-      const listRect = listRef.current.getBoundingClientRect();
-      const tabRect = activeTab.getBoundingClientRect();
-
-      if (orientation === "horizontal") {
-        setIndicatorStyle({
-          width: tabRect.width,
-          height: variant === "underline" ? "2px" : tabRect.height,
-          transform: `translate(${tabRect.left - listRect.left}px, ${tabRect.top - listRect.top}px)`,
-        });
-      } else {
-        setIndicatorStyle({
-          width: variant === "underline" ? "2px" : tabRect.width,
-          height: tabRect.height,
-          transform: `translate(${tabRect.left - listRect.left}px, ${tabRect.top - listRect.top}px)`,
-        });
-      }
-    };
-
-    updateIndicator();
-
-    // Update on window resize
-    window.addEventListener("resize", updateIndicator);
-
-    // Use MutationObserver to detect when active tab changes
-    const observer = new MutationObserver(updateIndicator);
-    if (listRef.current) {
-      observer.observe(listRef.current, {
-        attributes: true,
-        subtree: true,
-        attributeFilter: ["data-state"],
-      });
-    }
-
-    return () => {
-      window.removeEventListener("resize", updateIndicator);
-      observer.disconnect();
-    };
-  }, [orientation, variant]);
-
-  return (
-    <TabsListContext.Provider value={{ variant, orientation }}>
-      <TabsPrimitive.List
-        ref={listRef}
-        data-slot="tabs-list"
-        className={cn(
-          "relative z-0 flex w-fit items-center justify-center gap-x-1 text-muted-foreground",
-          "data-[orientation=vertical]:flex-col",
-          variant === "default"
-            ? "rounded-lg bg-muted p-1"
-            : "data-[orientation=horizontal]:py-1.5 data-[orientation=vertical]:px-1.5 *:data-[slot=tabs-trigger]:hover:bg-accent",
-          className,
-        )}
-        {...props}
-      >
-        {children}
-        <div
-          data-slot="tab-indicator"
-          className={cn(
-            "absolute left-0 top-0 transition-[width,height,transform] duration-200 ease-in-out pointer-events-none",
-            variant === "underline"
-              ? "z-10 bg-primary data-[orientation=horizontal]:bottom-0 data-[orientation=horizontal]:top-auto data-[orientation=vertical]:right-0 data-[orientation=vertical]:left-auto"
-              : "-z-1 rounded-md bg-card shadow-sm border border-border/50",
-          )}
-          data-orientation={orientation}
-          style={indicatorStyle}
-        />
-      </TabsPrimitive.List>
-    </TabsListContext.Provider>
-  );
-}
-
-function TabsTab({
-  className,
-  ...props
-}: React.ComponentProps<typeof TabsPrimitive.Trigger>) {
-  return (
-    <TabsPrimitive.Trigger
-      data-slot="tabs-trigger"
+    <TabsPrimitive.Root
+      data-slot="tabs"
+      data-orientation={orientation}
       className={cn(
-        "flex flex-1 shrink-0 cursor-pointer items-center justify-center rounded-md border border-transparent text-sm font-medium whitespace-nowrap transition-[color,background-color,box-shadow] outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-64 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        "hover:text-foreground data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground",
-        "gap-2 px-4 py-2",
-        "data-[orientation=vertical]:w-full data-[orientation=vertical]:justify-start",
+        "group/tabs flex gap-2 data-horizontal:flex-col",
         className,
       )}
       {...props}
@@ -153,24 +23,60 @@ function TabsTab({
   );
 }
 
-function TabsPanel({
+const tabsListVariants = cva(
+  "group/tabs-list inline-flex w-fit items-center justify-center rounded-lg p-[3px] text-muted-foreground group-data-horizontal/tabs:h-8 group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col data-[variant=line]:rounded-none",
+  {
+    variants: {
+      variant: {
+        default: "bg-muted",
+        line: "gap-1 bg-transparent",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  },
+);
+
+function TabsList({
   className,
+  variant = "default",
   ...props
-}: React.ComponentProps<typeof TabsPrimitive.Content>) {
+}: TabsPrimitive.List.Props & VariantProps<typeof tabsListVariants>) {
   return (
-    <TabsPrimitive.Content
-      data-slot="tabs-content"
-      className={cn("flex-1 outline-none", className)}
+    <TabsPrimitive.List
+      data-slot="tabs-list"
+      data-variant={variant}
+      className={cn(tabsListVariants({ variant }), className)}
       {...props}
     />
   );
 }
 
-export {
-  Tabs,
-  TabsList,
-  TabsTab,
-  TabsTab as TabsTrigger,
-  TabsPanel,
-  TabsPanel as TabsContent,
-};
+function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
+  return (
+    <TabsPrimitive.Tab
+      data-slot="tabs-trigger"
+      className={cn(
+        "relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-1.5 py-0.5 text-sm font-medium whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 dark:text-muted-foreground dark:hover:text-foreground group-data-[variant=default]/tabs-list:data-active:shadow-sm group-data-[variant=line]/tabs-list:data-active:shadow-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent",
+        "data-active:bg-background data-active:text-foreground dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground",
+        "after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
+  return (
+    <TabsPrimitive.Panel
+      data-slot="tabs-content"
+      className={cn("flex-1 text-sm outline-none", className)}
+      {...props}
+    />
+  );
+}
+
+export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants };

@@ -1,7 +1,6 @@
 "use client";
 
 import { CheckIcon, LoaderCircleIcon } from "lucide-react";
-import { Slot } from "radix-ui";
 import * as React from "react";
 import { createContext, useContext } from "react";
 
@@ -22,6 +21,23 @@ type StepItemContextValue = {
 };
 
 type StepState = "active" | "completed" | "inactive" | "loading";
+
+function renderAsChild(
+  child: React.ReactNode,
+  props: Record<string, unknown>,
+  className?: string,
+) {
+  if (!React.isValidElement(child)) {
+    return null;
+  }
+
+  const childProps = child.props as { className?: string };
+
+  return React.cloneElement(child, {
+    ...props,
+    className: cn(className, childProps.className),
+  } as React.HTMLAttributes<HTMLElement>);
+}
 
 // Contexts
 const StepperContext = createContext<StepperContextValue | undefined>(
@@ -162,11 +178,10 @@ function StepperTrigger({
   const { step, isDisabled } = useStepItem();
 
   if (asChild) {
-    const Comp = asChild ? Slot.Root : "span";
-    return (
-      <Comp className={className} data-slot="stepper-trigger">
-        {children}
-      </Comp>
+    return renderAsChild(
+      children,
+      { "data-slot": "stepper-trigger" },
+      className,
     );
   }
 

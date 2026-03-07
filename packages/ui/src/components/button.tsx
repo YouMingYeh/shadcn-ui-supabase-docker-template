@@ -1,34 +1,39 @@
+"use client";
+
 import * as React from "react";
-import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
 
 import { cn } from "@workspace/ui/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg border text-sm font-medium transition-shadow outline-none disabled:pointer-events-none disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        default:
-          "border-primary bg-primary text-primary-foreground shadow-xs shadow-primary/24 hover:bg-primary/90 dark:shadow-primary/40",
-        destructive:
-          "border-destructive bg-destructive text-destructive-foreground shadow-xs shadow-destructive/24 hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/80 dark:shadow-destructive/40",
+        default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
         outline:
-          "border-border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
+          "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80 dark:bg-secondary/50",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         ghost:
-          "border-transparent hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
-        link: "border-transparent text-primary underline-offset-4 hover:underline",
+          "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
+        destructive:
+          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
+        link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        sm: "h-8 gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "h-10 px-6 has-[>svg]:px-4",
-        icon: "size-9",
-        "icon-sm": "size-8",
-        "icon-lg": "size-10",
+        default:
+          "h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
+        xs: "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
+        sm: "h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
+        lg: "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
+        icon: "size-8",
+        "icon-xs":
+          "size-6 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3",
+        "icon-sm":
+          "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
+        "icon-lg": "size-9",
       },
     },
     defaultVariants: {
@@ -38,46 +43,82 @@ const buttonVariants = cva(
   },
 );
 
-interface ButtonProps
-  extends React.ComponentProps<"button">,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
-  loading?: boolean;
-  loadingText?: string;
+function renderButtonChild(
+  child: React.ReactNode,
+  props: React.ButtonHTMLAttributes<HTMLButtonElement>,
+  className?: string,
+) {
+  if (!React.isValidElement(child)) {
+    return null;
+  }
+
+  const childProps = child.props as { className?: string };
+
+  return React.cloneElement(child, {
+    ...props,
+    className: cn(className, childProps.className),
+  } as React.HTMLAttributes<HTMLElement>);
 }
+
+type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
+  VariantProps<typeof buttonVariants> & {
+    asChild?: boolean;
+    loading?: boolean;
+    loadingText?: string;
+    ref?: React.Ref<HTMLButtonElement>;
+  };
 
 function Button({
   className,
-  variant,
-  size,
+  variant = "default",
+  size = "default",
   asChild = false,
   loading = false,
   loadingText,
-  disabled,
   children,
+  disabled,
+  ref,
   ...props
 }: ButtonProps) {
-  const Comp = asChild ? Slot : "button";
   const isDisabled = disabled || loading;
-
-  return (
-    <Comp
-      data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
-      disabled={isDisabled}
-      {...props}
-    >
+  const content = (
+    <>
       {loading ? (
         <>
-          <Loader2 className="animate-spin" aria-hidden="true" />
-          {loadingText ?? children}
+          <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+          <span>{loadingText ?? children}</span>
         </>
       ) : (
         children
       )}
-    </Comp>
+    </>
+  );
+
+  const buttonClassName = cn(buttonVariants({ variant, size, className }));
+
+  if (asChild) {
+    return renderButtonChild(
+      children,
+      {
+        ...props,
+        "aria-busy": loading || undefined,
+      },
+      buttonClassName,
+    );
+  }
+
+  return (
+    <button
+      ref={ref}
+      data-slot="button"
+      className={buttonClassName}
+      disabled={isDisabled}
+      aria-busy={loading || undefined}
+      {...props}
+    >
+      {content}
+    </button>
   );
 }
 
-export { Button, buttonVariants };
-export type { ButtonProps };
+export { Button, buttonVariants, type ButtonProps };
