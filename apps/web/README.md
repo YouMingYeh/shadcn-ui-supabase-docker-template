@@ -16,7 +16,7 @@ Next.js frontend for Mars LINE messaging platform with Supabase authentication.
 ### Prerequisites
 
 - Node.js 20+
-- pnpm
+- Bun
 - Supabase project (see database setup)
 
 ### Environment Setup
@@ -40,10 +40,10 @@ Next.js frontend for Mars LINE messaging platform with Supabase authentication.
 
 ```bash
 # From the root of the monorepo
-pnpm dev
+bun dev
 
 # Or run just the web app
-pnpm --filter web dev
+bun run --filter web dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000)
@@ -52,10 +52,10 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ```bash
 # From the root of the monorepo
-pnpm build
+bun run build
 
 # Or build just the web app
-pnpm --filter web build
+bun run --filter web build
 ```
 
 ## Authentication Flow
@@ -250,7 +250,7 @@ To support email confirmation, update the Supabase email template:
 
 - Regenerate types: `npx supabase gen types typescript --project-id "your-project-id" --schema public > packages/database/src/database.types.ts`
 - Restart TypeScript server in your IDE
-- Run `pnpm typecheck` to verify
+- Run `bun typecheck` to verify
 
 ### User logged out unexpectedly
 

@@ -1,15 +1,12 @@
 # syntax=docker/dockerfile:1
 
 # Stage 1: Base
-FROM node:20-alpine AS base
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+FROM oven/bun:1 AS base
 WORKDIR /app
 
 # Stage 2: Builder - Prune the monorepo
 FROM base AS builder
-RUN pnpm add -g turbo
+RUN bun add -g turbo
 COPY . .
 RUN turbo prune server --docker
 
@@ -19,14 +16,15 @@ WORKDIR /app
 
 # Copy lockfile and package.json's from prune
 COPY --from=builder /app/out/json/ .
-RUN pnpm install --frozen-lockfile
+COPY --from=builder /app/out/bun.lock ./bun.lock
+RUN bun install --frozen-lockfile
 
 # Copy source code from prune
 COPY --from=builder /app/out/full/ .
-RUN pnpm turbo run build --filter=server
+RUN bun run build --filter=server
 
 # Stage 4: Runner - Production runtime
-FROM base AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 
 # Copy built application maintaining monorepo structure

@@ -38,6 +38,7 @@ dist
 
 # Debug
 npm-debug.log*
+bun-debug.log*
 
 # Misc
 .DS_Store

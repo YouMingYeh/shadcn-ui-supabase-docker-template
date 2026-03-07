@@ -15,11 +15,11 @@
 - Import types using: `import type { Database, Tables, TablesInsert, TablesUpdate } from "@workspace/database/types"`
 
 ## Build, Test, and Development Commands
-- **ALWAYS run lint, typecheck, and build** before committing: `pnpm lint && pnpm typecheck && pnpm build`
-- `pnpm dev` runs all apps in dev mode via Turborepo.
-- `pnpm build` builds every app/package; `pnpm typecheck` and `pnpm lint` validate TS + lint rules.
-- `pnpm format` runs Prettier across `*.ts`, `*.tsx`, and `*.md`.
-- Scoped runs: `pnpm --filter web dev`, `pnpm --filter admin build`, `pnpm --filter server dev`.
+- **ALWAYS run lint, typecheck, and build** before committing: `bun lint && bun typecheck && bun run build`
+- `bun dev` runs all apps in dev mode via Turborepo.
+- `bun run build` builds every app/package; `bun typecheck` and `bun lint` validate TS + lint rules.
+- `bun format` runs Prettier across `*.ts`, `*.tsx`, and `*.md`.
+- Scoped runs: `bun run --filter web dev`, `bun run --filter admin build`, `bun run --filter server dev`.
 - Docker: `make dev-docker` (dev stack), `make up`/`make down`, `make logs`, `make clean`.
 - **ALWAYS run `docker compose up --build -d`** to ensure services actually run and are built correctly.
 
@@ -52,9 +52,9 @@
 - Prefer workspace imports (`@workspace/ui`, `@workspace/database`) over relative cross-package paths.
 
 ## Testing Guidelines
-- **ALWAYS run lint and typecheck** before committing: `pnpm lint && pnpm typecheck`
-- **ALWAYS run build** to ensure everything compiles: `pnpm build`
-- No dedicated test runner is configured yet; rely on `pnpm lint` and `pnpm typecheck` for CI-quality checks.
+- **ALWAYS run lint and typecheck** before committing: `bun lint && bun typecheck`
+- **ALWAYS run build** to ensure everything compiles: `bun run build`
+- No dedicated test runner is configured yet; rely on `bun lint` and `bun typecheck` for CI-quality checks.
 - If you add tests, follow a `*.test.ts(x)` or `*.spec.ts(x)` naming pattern and add scripts to the relevant `package.json`.
 
 ## Commit & Pull Request Guidelines

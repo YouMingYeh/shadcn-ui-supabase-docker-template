@@ -20,8 +20,8 @@ help:
 	@echo "Cleanup:"
 	@echo "  make clean            - Remove all containers, volumes, and images"
 	@echo ""
-	@echo "For local development: pnpm dev"
-	@echo "For local build: pnpm build"
+	@echo "For local development: bun dev"
+	@echo "For local build: bun run build"
 	@echo ""
 
 # Docker development

@@ -35,7 +35,7 @@ A production-ready monorepo template featuring **shadcn/ui**, **Supabase authent
 ## 📋 Prerequisites
 
 - **Node.js** >= 20
-- **pnpm** >= 10.4.1 (or install via `corepack enable`)
+- **Bun** >= 1.0 (install via `curl -fsSL https://bun.sh/install | bash`)
 - **Docker** & **Docker Compose** (optional, for containerized development)
 - **Supabase Account** (for authentication)
 
@@ -48,7 +48,7 @@ A production-ready monorepo template featuring **shadcn/ui**, **Supabase authent
 ```bash
 git clone <your-repo-url>
 cd shadcn-ui-supabase-docker-template
-pnpm install
+bun install
 ```
 
 ### 2. Set Up Environment Variables
@@ -110,7 +110,7 @@ For the admin dashboard, generate a password hash:
 
 ```bash
 cd apps/admin
-pnpm generate:password
+bun generate:password
 # Enter your password when prompted
 # Copy the generated hash to ADMIN_PASSWORD_HASH in .env.local
 ```
@@ -119,7 +119,7 @@ pnpm generate:password
 
 **Option A: Local Development**
 ```bash
-pnpm dev
+bun dev
 ```
 
 This starts all apps in development mode:
@@ -199,27 +199,27 @@ CORS_ORIGIN=http://localhost:3000
 ### Root Level
 
 ```bash
-pnpm dev          # Start all apps in development mode
-pnpm build        # Build all apps for production
-pnpm lint         # Lint all packages
-pnpm typecheck    # Type check all packages
-pnpm format       # Format code with Prettier
+bun dev           # Start all apps in development mode
+bun run build     # Build all apps for production
+bun lint          # Lint all packages
+bun typecheck     # Type check all packages
+bun format        # Format code with Prettier
 ```
 
 ### Individual Apps
 
 ```bash
 # Web app
-pnpm --filter web dev
-pnpm --filter web build
+bun run --filter web dev
+bun run --filter web build
 
 # Admin app
-pnpm --filter admin dev
-pnpm --filter admin build
+bun run --filter admin dev
+bun run --filter admin build
 
 # Server
-pnpm --filter server dev
-pnpm --filter server build
+bun run --filter server dev
+bun run --filter server build
 ```
 
 ## 🎨 Adding shadcn/ui Components
@@ -286,7 +286,7 @@ The admin dashboard uses password-based authentication:
 ### Local Build
 
 ```bash
-pnpm build
+bun run build
 ```
 
 ### Docker Build
@@ -306,12 +306,12 @@ All services will be available:
 - **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript 5.7+
 - **Styling**: Tailwind CSS
-- **UI Components**: shadcn/ui (Radix UI)
+- **UI Components**: shadcn/ui (Base UI)
 - **Authentication**: Supabase Auth
 - **Database**: Supabase (PostgreSQL)
 - **API**: Express.js
 - **Monorepo**: Turborepo
-- **Package Manager**: pnpm
+- **Package Manager**: Bun
 - **Containerization**: Docker & Docker Compose
 - **Code Quality**: ESLint, Prettier
 

@@ -8,26 +8,26 @@ Express.js server for LINE webhook handling with full type-safe Supabase integra
 
 ```bash
 # From the root of the monorepo
-pnpm dev
+bun dev
 
 # Or run just the server
-pnpm --filter server dev
+bun run --filter server dev
 ```
 
 ### Build
 
 ```bash
 # From the root of the monorepo
-pnpm build
+bun run build
 
 # Or build just the server
-pnpm --filter server build
+bun run --filter server build
 ```
 
 ### Production
 
 ```bash
-pnpm --filter server start
+bun run --filter server start
 ```
 
 ## ✨ Features

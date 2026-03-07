@@ -5,8 +5,8 @@ const bcrypt = require('bcryptjs');
 const password = process.argv[2];
 
 if (!password) {
-  console.error('Usage: pnpm generate:password <password>');
-  console.error('Example: pnpm generate:password mySecurePassword123');
+  console.error('Usage: bun generate:password <password>');
+  console.error('Example: bun generate:password mySecurePassword123');
   process.exit(1);
 }
 

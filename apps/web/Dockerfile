@@ -1,22 +1,16 @@
 # /apps/web/Dockerfile
-FROM node:20-alpine AS base
-RUN apk update && apk add --no-cache libc6-compat
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+FROM oven/bun:1 AS base
 WORKDIR /app
 
 FROM base AS builder
-RUN corepack prepare pnpm@10.4.1 --activate
-RUN pnpm add -g turbo
+RUN bun add -g turbo
 COPY . .
 RUN turbo prune --scope=web --docker
 
 FROM base AS installer
 COPY --from=builder /app/out/json/ .
-COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
-RUN corepack prepare pnpm@10.4.1 --activate
-RUN pnpm install --frozen-lockfile
+COPY --from=builder /app/out/bun.lock ./bun.lock
+RUN bun install --frozen-lockfile
 
 COPY --from=builder /app/out/full/ .
 RUN mkdir -p /app/apps/web/public
@@ -30,7 +24,7 @@ ENV NODE_ENV=production
 ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
 ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-RUN pnpm build --filter=web
+RUN bun run build --filter=web
 
 FROM node:20-alpine AS runner
 WORKDIR /app

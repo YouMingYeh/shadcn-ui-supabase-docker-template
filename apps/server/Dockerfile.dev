@@ -1,21 +1,16 @@
 # syntax=docker/dockerfile:1
 
-FROM node:20-alpine
-
-# Install pnpm
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+FROM oven/bun:1
 
 WORKDIR /app
 
 # Copy package files
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY package.json bun.lock turbo.json ./
 COPY apps/server/package.json ./apps/server/
 COPY packages ./packages/
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN bun install --frozen-lockfile
 
 # Source code will be mounted via volume
 
@@ -25,4 +20,4 @@ ENV PORT=4000
 EXPOSE 4000
 
 # Run dev server with nodemon
-CMD ["pnpm", "--filter", "server", "dev"]
+CMD ["bun", "run", "--filter", "server", "dev"]

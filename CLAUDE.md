@@ -5,17 +5,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build & Development Commands
 
 ```bash
-pnpm install                    # Install all dependencies
-pnpm dev                        # Run all apps in dev mode (web:3000, admin:3001, server:4000)
-pnpm build                      # Build all apps/packages
-pnpm lint                       # Lint all packages
-pnpm typecheck                  # Type check all packages
-pnpm format                     # Prettier format *.ts, *.tsx, *.md
+bun install                    # Install all dependencies
+bun dev                        # Run all apps in dev mode (web:3000, admin:3001, server:4000)
+bun run build                      # Build all apps/packages
+bun lint                       # Lint all packages
+bun typecheck                  # Type check all packages
+bun format                     # Prettier format *.ts, *.tsx, *.md
 
 # Scoped to a single app
-pnpm --filter web dev
-pnpm --filter admin dev
-pnpm --filter server dev
+bun run --filter web dev
+bun run --filter admin dev
+bun run --filter server dev
 
 # Docker
 make dev-docker                 # Dev mode (attached, hot-reload via volume mounts)
@@ -26,11 +26,11 @@ make clean                      # Remove containers, volumes, and images
 docker compose up --build -d    # Rebuild and verify services run correctly
 ```
 
-**Before committing, always run:** `pnpm lint && pnpm typecheck && pnpm build`
+**Before committing, always run:** `bun lint && bun typecheck && bun run build`
 
 ## Architecture
 
-This is a **pnpm + Turborepo monorepo** with three apps and shared packages. All packages use ES modules.
+This is a **bun + Turborepo monorepo** with three apps and shared packages. All packages use ES modules.
 
 ### Apps
 
@@ -70,7 +70,7 @@ This is a **pnpm + Turborepo monorepo** with three apps and shared packages. All
 
 ## Environment Setup
 
-Root `.env` is required for Docker. Local dev can use `apps/*/.env.local`. See `.env.example` for all variables. Admin password hash: `cd apps/admin && pnpm generate:password`.
+Root `.env` is required for Docker. Local dev can use `apps/*/.env.local`. See `.env.example` for all variables. Admin password hash: `cd apps/admin && bun generate:password`.
 
 ## Commit Style
 

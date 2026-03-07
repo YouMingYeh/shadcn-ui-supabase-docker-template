@@ -17,15 +17,14 @@ services:
       - ./apps/server:/app/apps/server
       - ./packages:/app/packages
       - ./package.json:/app/package.json
-      - ./pnpm-lock.yaml:/app/pnpm-lock.yaml
-      - ./pnpm-workspace.yaml:/app/pnpm-workspace.yaml
+      - ./bun.lock:/app/bun.lock
       - ./turbo.json:/app/turbo.json
       # Preserve node_modules
       - server-node-modules:/app/node_modules
       - server-app-node-modules:/app/apps/server/node_modules
     networks:
       - app-network
-    command: pnpm --filter server dev
+    command: bun run --filter server dev
 
   # Web Frontend App (Development)
   web:
@@ -48,8 +47,7 @@ services:
       - ./apps/web:/app/apps/web
       - ./packages:/app/packages
       - ./package.json:/app/package.json
-      - ./pnpm-lock.yaml:/app/pnpm-lock.yaml
-      - ./pnpm-workspace.yaml:/app/pnpm-workspace.yaml
+      - ./bun.lock:/app/bun.lock
       - ./turbo.json:/app/turbo.json
       # Preserve node_modules
       - web-node-modules:/app/node_modules
@@ -60,7 +58,7 @@ services:
       - app-network
     depends_on:
       - server
-    command: pnpm --filter web dev
+    command: bun run --filter web dev
 
   # Admin Frontend App (Development)
   admin:
@@ -82,8 +80,7 @@ services:
       - ./apps/admin:/app/apps/admin
       - ./packages:/app/packages
       - ./package.json:/app/package.json
-      - ./pnpm-lock.yaml:/app/pnpm-lock.yaml
-      - ./pnpm-workspace.yaml:/app/pnpm-workspace.yaml
+      - ./bun.lock:/app/bun.lock
       - ./turbo.json:/app/turbo.json
       # Preserve node_modules
       - admin-node-modules:/app/node_modules
@@ -94,7 +91,7 @@ services:
       - app-network
     depends_on:
       - server
-    command: pnpm --filter admin dev
+    command: bun run --filter admin dev
 
 networks:
   app-network:
